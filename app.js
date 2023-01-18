@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require('dotenv').config()
 
 
 const UserRoutes = require("./routes/userAuth");
@@ -8,7 +9,7 @@ const sauceRoute = require("./routes/sauceRoute");
 
 
 mongoose.set("strictQuery", false);
-mongoose.connect(/*MongoDB URI*/)
+mongoose.connect(process.env.MONGODBCONNECTION)
                 .then(()=> console.log("connection a mongoDB reussit"))
                 .catch((err)=> console.log("connection echouée a MongoDB ${err}",err))
 
