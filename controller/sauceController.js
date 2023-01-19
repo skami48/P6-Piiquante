@@ -3,7 +3,7 @@ const Sauce = require("../model/Sauce");
 const fs = require("fs");
 
 
-exports.getSauces = (req,res,next)=>{
+exports.getSauces = (req,res)=>{
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
         .catch(error => res.status(400).json({error}));
@@ -11,8 +11,8 @@ exports.getSauces = (req,res,next)=>{
 
 };
 
-exports.postSauces = (req,res,next)=>{
-    const sauceObject = JSON.parse(req.body.sauce)
+exports.postSauces = (req,res)=>{
+    const sauceObject = JSON.parse(req.body.sauce);
     
     delete sauceObject.id;
     delete sauceObject.userId;
@@ -28,7 +28,7 @@ exports.postSauces = (req,res,next)=>{
         .catch(error => res.status(400).json({error}));
 };
 
-exports.getSaucesID = (req,res,next)=>{
+exports.getSaucesID = (req,res)=>{
     
     Sauce.findOne({_id: req.params.id})
         .then(sauces => res.status(200).json(sauces))
@@ -36,7 +36,7 @@ exports.getSaucesID = (req,res,next)=>{
 
 };
 
-exports.putSaucesID = (req,res,next)=>{
+exports.putSaucesID = (req,res)=>{
     const sauce = req.file ?{
         ...JSON.parse(req.body.sauce),
         imageUrl : `${req.protocol}://${req.get("host")}/images/${req.file.filename}`}
@@ -61,7 +61,7 @@ exports.putSaucesID = (req,res,next)=>{
 
                 Sauce.updateOne({_id : req.params.id},{...sauce,_id:req.params.id})
                         .then (()=> res.status(200).json({message:"Changements Appliqué"}))
-                        .catch(error => res.status(404).json({message : "Error could not find object"}))
+                        .catch(() => res.status(404).json({message : "Error could not find object"}));
             }
         })
         .catch(error => res.status(500).json({error}));
@@ -69,12 +69,12 @@ exports.putSaucesID = (req,res,next)=>{
 
 };
 
-exports.deleteSaucesID = (req,res,next)=>{
+exports.deleteSaucesID = (req,res)=>{
     const entry =req.params.id;
     Sauce.findOne({_id: entry})
             .then(valid=>{
                 if(valid === null){
-                    res.status(404).json({message : "Error could not find object"})
+                    res.status(404).json({message : "Error could not find object"});
                 }else{
 
                     if(req.auth.userId ==valid.userId){
@@ -89,7 +89,7 @@ exports.deleteSaucesID = (req,res,next)=>{
         
                         Sauce.deleteOne({_id:entry})
                             .then(()=> res.status(200).json({message:"Element supprimé"}))
-                            .catch(error => res.status(500).json({error}))
+                            .catch(error => res.status(500).json({error}));
                     }else{
                         res.status(404).json({message :"Error could not find object"});
                     }
@@ -100,7 +100,7 @@ exports.deleteSaucesID = (req,res,next)=>{
 
 };
 
-exports.postSaucesLike = (req,res,next)=>{
+exports.postSaucesLike = (req,res)=>{
     const entry = req.params.id;
     
 
@@ -110,7 +110,7 @@ exports.postSaucesLike = (req,res,next)=>{
 
 
                     if(valid === null){
-                        res.status(404).json({message : "Error could not find object"})
+                        res.status(404).json({message : "Error could not find object"});
                     }else{
                         
                         
@@ -125,16 +125,20 @@ exports.postSaucesLike = (req,res,next)=>{
                                         
                                     }
                                     
-                                    valid.usersLiked.push(req.auth.userId)
+                                    valid.usersLiked.push(req.auth.userId);
                                     valid.likes++;
                                     
-                                    Sauce.updateOne({_id:entry},{usersLiked:valid.usersLiked,usersDisliked:valid.usersDisliked,dislikes:valid.dislikes,likes:valid.likes})
+                                    Sauce.updateOne({_id:entry},{usersLiked:valid.usersLiked,
+                                                                usersDisliked:valid.usersDisliked,
+                                                                dislikes:valid.dislikes,
+                                                                likes:valid.likes})
+
                                             .then(res.status(200).json({message : "done"}))
-                                            .catch(error => res.status(500).json({message : "error" }));
+                                            .catch(() => res.status(500).json({message : "error" }));
 
                                     
                                 }else{
-                                    res.status(500).json({message : "alreadylike"})
+                                    res.status(500).json({message : "alreadylike"});
                                 }
                                 
                             }else if(req.body.like === -1){
@@ -144,15 +148,18 @@ exports.postSaucesLike = (req,res,next)=>{
                                         valid.likes--;
                                     }
                                     
-                                    valid.usersDisliked.push(req.auth.userId)
+                                    valid.usersDisliked.push(req.auth.userId);
                                     valid.dislikes++;
-                                    Sauce.updateOne({_id:entry},{usersLiked:valid.usersLiked,usersDisliked:valid.usersDisliked,dislikes:valid.dislikes,likes:valid.likes})
+                                    Sauce.updateOne({_id:entry},{usersLiked:valid.usersLiked,
+                                                                usersDisliked:valid.usersDisliked,
+                                                                dislikes:valid.dislikes,
+                                                                likes:valid.likes})
                                             .then(res.status(200).json({message : "done"}))
-                                            .catch(error => res.status(500).json({message : "error" }));
+                                            .catch(() => res.status(500).json({message : "error" }));
                                    
 
                                 }else{
-                                    res.status(500).json({message : "alreadydislike"})
+                                    res.status(500).json({message : "alreadydislike"});
                                 }
                                 
                             }else if(req.body.like === 0){
@@ -164,9 +171,12 @@ exports.postSaucesLike = (req,res,next)=>{
                                     valid.usersLiked.splice( valid.usersLiked.indexOf(req.auth.userId),1);
                                     valid.likes--;
                                 }
-                                Sauce.updateOne({_id:entry},{usersLiked:valid.usersLiked,usersDisliked:valid.usersDisliked,dislikes:valid.dislikes,likes:valid.likes})
+                                Sauce.updateOne({_id:entry},{usersLiked:valid.usersLiked,
+                                                            usersDisliked:valid.usersDisliked,
+                                                            dislikes:valid.dislikes,
+                                                            likes:valid.likes})
                                             .then(res.status(200).json({message : "done"}))
-                                            .catch(error => res.status(500).json({message : "error" }));
+                                            .catch(() => res.status(500).json({message : "error" }));
                             }else{
                                 res.status(500).json({message :"Error could not find object" });
                             }
